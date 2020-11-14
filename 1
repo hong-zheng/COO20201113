@@ -1,0 +1,175 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <iostream>
+#include <ctime>
+using namespace std; 
+
+void swap(int* i, int* j){
+	int tmp = *i;
+	*i = *j;
+	*j = tmp;
+}
+void swap(int* arr, int left, int right){
+	int tmp = arr[left];
+	arr[left] = arr[right];
+}
+// 建小堆：向下调整
+void shiftDown(int* arr, int len, int parent){
+	int child = 2 * parent + 1;
+	while (child <len){
+		if (child + 1 < len && arr[child + 1] < arr[child]){
+			++child;
+		}
+		if (arr[parent] > arr[child]){
+			swap(&arr[parent], &arr[child]);
+			parent = child;
+			child = 2 * parent + 1;
+		}
+		else{
+			break;
+		}
+	}
+}
+
+// 向上调整
+void shiftUp(int* arr, int len,int child){
+	int parent = (child - 1) / 2;
+
+	while (parent >= 0){
+		if (arr[child] < arr[parent]){
+			swap(&arr[child], &arr[parent]);
+			child = parent;
+			parent = (child - 1) / 2;
+		}
+		else{
+			break;
+		}
+	}
+}
+void bsmup(int* arr, int len){
+	for (int child = 0; child < len; ++child){
+		shiftUp(arr, len, child);
+	}
+}
+
+void buildSmallHeap(int* arr, int len){
+	for (int parent = (len - 2) / 2; parent >= 0; --parent){
+		shiftDown(arr, len, parent);
+	}
+}
+
+void hs(int* arr, int len){
+	buildSmallHeap(arr, len);
+	for (int i = len - 1; i >= 0; --i){
+		swap(&arr[i], &arr[0]);
+		shiftDown(arr, i, 0);
+	}
+}
+
+void display(int* arr, int len){
+	for (int i = 0; i < len; ++i)
+		cout << arr[i] << " ";
+	cout << endl;
+}
+
+typedef int HPDataType ;
+
+// 小堆的向下调整
+void sd(HPDataType* array, int size, int parent){
+	// 左孩子位置
+	int child = 2 * parent + 1;
+
+	// 有可能一直走到叶子位置，因此需要这个外层循环
+	while (child < size){
+		// 从左右孩子中选一个最大
+		if (child < size && array[child + 1] < array[child]){
+			++child;
+		}
+		// 和父节点比较
+		if (array[child] > array[parent]){
+			swap(&array[parent], &array[child]);
+			// 更新
+			parent = child;
+			child = 2 * parent + 1;
+		}
+		else{
+			break;
+		}
+	}
+}
+
+// 堆的插入：尾插+向上调整
+typedef struct Heap{
+	HPDataType* _array;
+	int _size;
+	int _capacity;
+} Heap;
+
+void heapCreat(Heap* hp,HPDataType* array, int size){
+	hp->_array = (HPDataType*)malloc(sizeof(HPDataType)*size);
+	memcpy(hp->_array, array, sizeof(HPDataType)*size);
+
+	hp->_size = size;
+	hp->_capacity = size;
+
+	// 建堆，从最后一个非叶子节点开始建堆 
+	// 最后一个非叶子节点 (size-2)/2
+	// 从最后一个非叶子节点开始，做一个多轮的向下调整
+	for (int parent = (size - 2) / 2; parent >= 0; parent--){
+		sd(hp->_array, hp->_size, parent);
+	}
+}
+
+
+void heapPrint(Heap* hp){
+	for (int i = 0; i < hp->_size; ++i){
+		cout << hp->_array[i] << " ";
+	}
+	cout << endl;
+}
+
+void su(HPDataType* array, int child){
+	int parent = (child - 1) / 2;
+	while (child > 0){
+		if (array[child] < array[parent]){
+			swap(&array[child], &array[parent]);
+			child = parent;
+			parent = (child - 1) / 2;
+		} 
+		else{ // 结束调整
+			break;
+		}
+	}
+}
+// 尾插：O(1)
+// 向上调整的效率：O(logn)
+void heapPush(Heap* hp, HPDataType data){
+	// HPDataType* tmp = (HPDataType*)malloc(sizeof(HPDataType)*(hp->_size + 1));
+	// 检查容量：扩容
+	if (hp->_size == hp->_capacity){
+		hp->_capacity *= 2;
+		hp->_array = (HPDataType*)realloc(hp->_array, hp->_capacity*(sizeof(HPDataType)));
+	}
+	// 尾插
+	hp->_array[hp->_size++] = data;
+	su(hp->_array, hp->_size - 1);
+}
+
+void test(){
+	int num;
+	cin >> num;
+	int* nums = new int[num];
+	for (int i = 0; i < num; ++i){
+		nums[i] = rand() % 100;
+	}
+	Heap heap;
+	heapCreat(&heap,nums, num);
+	heapPrint(&heap);
+	//display(nums, num);
+}
+
+int main(){
+	test();
+
+	system("pause");
+	return 0;
+}
